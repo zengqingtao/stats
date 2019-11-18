@@ -5,11 +5,24 @@ export default {
   //   info: {}
   // },
   // -----------------------↓添加
-  mutations:{
+  mutations: {
+    /**
+     * 设置角色
+     */
+    SET_HAVE_ROLE(state, haveRole) {
+      state.haveRole = haveRole
+      // 持久化
+      this.dispatch('d2admin/db/set', {
+        dbName: 'sys',
+        path: 'user.haveRole',
+        value: haveRole,
+        user: true
+      })
+    },
     /**
      * 设置access_token
      */
-    SET_ACCESS_TOKEN (state, accessToken) {
+    SET_ACCESS_TOKEN(state, accessToken) {
       state.accessToken = accessToken
       // 持久化
       this.dispatch('d2admin/db/set', {
@@ -22,7 +35,7 @@ export default {
     /**
      * 设置refresh_token
      */
-    SET_REFRESH_TOKEN (state, refreshToken) {
+    SET_REFRESH_TOKEN(state, refreshToken) {
       state.refreshToken = refreshToken
       // 持久化
       this.dispatch('d2admin/db/set', {
@@ -35,7 +48,7 @@ export default {
     /**
      * 设置菜单
      */
-    SET_MENU (state, menu) {
+    SET_MENU(state, menu) {
       state.menu = menu
       // 持久化
       this.dispatch('d2admin/db/set', {
@@ -45,7 +58,7 @@ export default {
         user: true
       })
     },
-    SET_USER_INFO (state, info) {
+    SET_USER_INFO(state, info) {
       // store 赋值
       state.info = info
       // 持久化
@@ -56,10 +69,21 @@ export default {
         user: true
       })
     },
+    SET_USER_ID(state, id) {
+      // store 赋值
+      state.id = id
+      // 持久化
+      this.dispatch('d2admin/db/set', {
+        dbName: 'sys',
+        path: 'user.id',
+        value: id,
+        user: true
+      })
+    },
     /**
      * 设置角色
      */
-    SET_ROLES (state, roles) {
+    SET_ROLES(state, roles) {
       state.roles = roles
       // 持久化
       this.dispatch('d2admin/db/set', {
@@ -72,7 +96,7 @@ export default {
     /**
      * 设置角色名称
      */
-    SET_ROLENAME (state, rolename) {
+    SET_ROLENAME(state, rolename) {
       state.rolename = rolename
       // 持久化
       this.dispatch('d2admin/db/set', {
@@ -82,10 +106,10 @@ export default {
         user: true
       })
     },
-        /**
-     * 设置数据权限
-     */
-    SET_PERMISSIONS (state, permissions) {
+    /**
+ * 设置数据权限
+ */
+    SET_PERMISSIONS(state, permissions) {
       const list = {}
       for (let i = 0; i < permissions.length; i++) {
         list[permissions[i]] = true
@@ -107,17 +131,25 @@ export default {
      * @param {Object} state vuex state
      * @param {*} info info
      */
-    set ({ state, dispatch }, info) {
+    set({ state, dispatch }, { info, id }) {
       return new Promise(async resolve => {
         // store 赋值
         state.info = info
+        state.id = id
         // 持久化
         await dispatch('d2admin/db/set', {
           dbName: 'sys',
           path: 'user.info',
           value: info,
           user: true
-        }, { root: true })
+        },
+        {
+          dbName:'sys',
+          path: 'user.id',
+          value: id,
+          user:true
+        },
+        { root: true })
         // end
         resolve()
       })
@@ -126,7 +158,7 @@ export default {
      * @description 从数据库取用户数据
      * @param {Object} state vuex state
      */
-    load ({ state, dispatch }) {
+    load({ state, dispatch }) {
       return new Promise(async resolve => {
         // store 赋值
         state.info = await dispatch('d2admin/db/get', {
@@ -134,7 +166,15 @@ export default {
           path: 'user.info',
           defaultValue: {},
           user: true
-        }, { root: true })
+        },
+        { root: true })
+        state.id = await dispatch('d2admin/db/get', {
+          dbName: 'sys',
+          path: 'user.id',
+          defaultValue: {},
+          user: true
+        },
+        { root: true })
         // end
         resolve()
       })

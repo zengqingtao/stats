@@ -1,10 +1,10 @@
 <template>
   <div
-    v-if="show"
+    v-if="false"
     class="d2-source"
     :class="{ 'd2-source--active': isActive }"
     @click="handleClick">
-    <d2-icon name="code"/> 本页源码
+    <!-- <d2-icon name="code"/> 本页源码 -->
   </div>
 </template>
 

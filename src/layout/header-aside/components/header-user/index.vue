@@ -1,14 +1,10 @@
 <template>
   <el-dropdown size="small" class="d2-mr">
-    <span class="btn-text">{{info ? `你好 ${info}` : '未登录'}}</span>
+    <span class="btn-text">{{info ? `您好 ${info}` : '未登录'}}</span>
     <el-dropdown-menu slot="dropdown">
       <el-dropdown-item @click.native="changePassword">
         <i class="fa fa-thermometer-full" aria-hidden="true"></i>
-        修改密码
-      </el-dropdown-item>
-      <el-dropdown-item @click.native="addUser">
-        <i class="fa fa-user-circle" aria-hidden="true"></i>
-        添加用户
+        修改个人密码
       </el-dropdown-item>
       <el-dropdown-item @click.native="logOff">
         <d2-icon name="power-off" class="d2-mr-5"/>
@@ -43,9 +39,11 @@ export default {
     },
     // 修改密码
     changePassword() {
+      console.log("触发按钮")
       getRoleMembers().then(res=>{
         var list = res.list
         connector.$emit('changePassword',{msg:true,list:list})
+        console.log("r",res.list)
       }).catch(err=>{
         console.log(err);
       })

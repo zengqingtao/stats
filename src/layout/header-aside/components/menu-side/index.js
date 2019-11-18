@@ -1,4 +1,4 @@
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 import menuMixin from '../mixin/menu'
 import { elMenuItem, elSubmenu } from '../libs/util.menu'
 import BScroll from 'better-scroll'
@@ -54,11 +54,16 @@ export default {
   },
   mounted () {
     this.scrollInit()
+    /* var clientWidth = document.body.clientWidth
+    if(clientWidth<=480){
+      this.asideCollapseToggle()
+    } */
   },
   beforeDestroy () {
     this.scrollDestroy()
   },
   methods: {
+    ...mapActions("d2admin/menu", ["asideCollapseToggle"]),
     scrollInit () {
       this.BS = new BScroll(this.$el, {
         mouseWheel: true,

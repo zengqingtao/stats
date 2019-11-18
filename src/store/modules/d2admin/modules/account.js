@@ -1,12 +1,13 @@
 import { Message, MessageBox } from 'element-ui'
 import util from '@/libs/util.js'
 import router from '@/router'
-import { loginByUsername,getUserInfo, logout } from '@api/sys.login' //-----------添加
+import { loginByUsername, getUserInfo, logout } from '@api/sys.login' //-----------添加
 import { GetMenu } from '@/api/menu' //-----------添加
 import { frameInRoutes } from '@/router/routes' //-----------添加
 import { nextTick } from 'q'
 export default {
   namespaced: true,
+
   actions: {
     /**
      * @description 登录
@@ -15,7 +16,48 @@ export default {
      * @param {Object} param password {String} 密码
      * @param {Object} param route {Object} 登录成功后定向的路由对象 任何 vue-router 支持的格式
      */
-    login ({ dispatch,commit },{ vm, username, password}) {
+    // 钉钉扫码登录
+    dingdinglogin({ dispatch, commit }, { vm, token }) {
+      return new Promise((resolve, reject) => {
+        util.cookies.set('token', token)
+        util.setToken(token)
+        //-----------------------------------------------------------↓添加并修改
+        // 设置 vuex token信息
+        commit('d2admin/user/SET_ACCESS_TOKEN', token, { root: true })
+        commit('d2admin/user/SET_REFRESH_TOKEN', token, { root: true })
+        dispatch('getUserInfo').then(res => {
+          let roleid = res.userinfo.role
+          GetMenu().then(res => {
+            {
+              // 设置用户菜单
+              commit('d2admin/user/SET_MENU', res.role, { root: true })
+              let oRoutes = util.formatRoutes(res.role)
+              // 多页面控制: 处理路由 得到每一级的路由设置
+              if (roleid == 3) {
+                // 设置侧边栏菜单
+                commit('d2admin/menu/asideSet', [], { root: true })
+              } else {
+                // 设置侧边栏菜单
+                commit('d2admin/menu/asideSet', res.role, { root: true })
+              }
+              commit('d2admin/page/init', [].concat(frameInRoutes, oRoutes), { root: true })
+              // 设置顶栏菜单
+              commit('d2admin/menu/headerSet', [], { root: true })
+              vm.$router.addRoutes(oRoutes)
+              // 跳转路由
+              vm.$router.push({
+                name: 'index'
+              })
+            }
+          })
+        })
+      })
+    },
+    login({ dispatch, commit }, { vm, username, password }) {
+      // 设置 vuex 用户信息
+      // -----------------------↓添加
+      // 用户登陆后查询用户信息: 角色 数据权限
+      // 开始请求登录接口
       return new Promise((resolve, reject) => {
         // 开始请求登录接口
         loginByUsername({
@@ -40,23 +82,24 @@ export default {
             // -----------------------↓添加
             // 用户登陆后查询用户信息: 角色 数据权限
             dispatch('getUserInfo').then(res => {
-                GetMenu().then(res => {
-                  // 设置用户菜单
-                  commit('d2admin/user/SET_MENU', res.role, { root: true })
-                  let oRoutes = util.formatRoutes(res.role)
-                  // 多页面控制: 处理路由 得到每一级的路由设置
-                  commit('d2admin/page/init', [].concat(frameInRoutes, oRoutes), { root: true })
-                  // 设置侧边栏菜单
-                  commit('d2admin/menu/asideSet',res.role, { root: true })
-                  // 设置顶栏菜单
-                  commit('d2admin/menu/headerSet', [], { root: true })
-                  vm.$router.addRoutes(oRoutes)
-                  // 跳转路由
-                  vm.$router.push({
-                    name: 'index'
-                  })
+
+              GetMenu().then(res => {
+                // 设置用户菜单
+                commit('d2admin/user/SET_MENU', res.role, { root: true })
+                let oRoutes = util.formatRoutes(res.role)
+                // 多页面控制: 处理路由 得到每一级的路由设置
+                commit('d2admin/page/init', [].concat(frameInRoutes, oRoutes), { root: true })
+                // 设置侧边栏菜单
+                commit('d2admin/menu/asideSet', res.role, { root: true })
+                // 设置顶栏菜单
+                commit('d2admin/menu/headerSet', [], { root: true })
+                vm.$router.addRoutes(oRoutes)
+                // 跳转路由
+                vm.$router.push({
+                  name: 'index'
                 })
               })
+            })
             // -----------↑添加
           })
           .catch(err => {
@@ -65,14 +108,22 @@ export default {
       })
     },
     //------------------------------------↓下添加并修改
-    getUserInfo ({ commit }) {
+    getUserInfo({ commit }) {
       return new Promise((resolve, reject) => {
+        util.cookies.set('roleid', 0)
         getUserInfo().then(response => {
-          console.log("getUserInfo-res:",response);
+          if (response.userinfo.role == 3) {
+            util.cookies.set('roleid', response.userinfo.role)
+            commit('d2admin/user/SET_HAVE_ROLE', false, { root: true })
+          } else {
+            commit('d2admin/user/SET_HAVE_ROLE', true, { root: true })
+          }
+          // commit('d2admin/user/SET_HAVE_ROLE', false, { root: true })
           const data = response.userinfo
           // util.cookies.set('uuid', data.role);
           // commit('d2admin/user/SET_USER_INFO', data.rolename + data.username, { root: true })
-          commit('d2admin/user/SET_USER_INFO',data.nick, { root: true })
+          commit('d2admin/user/SET_USER_INFO', data.nick, { root: true })
+          commit('d2admin/user/SET_USER_ID', data.id, { root: true })
           // commit('d2admin/user/SET_ROLES', data.role, { root: true })
           commit('d2admin/user/SET_ROLES', data.role, { root: true })
           // commit('d2admin/user/SET_ROLENAME', data.rolename, { root: true })
@@ -89,20 +140,20 @@ export default {
      * @param {Object} param context
      * @param {Object} param confirm {Boolean} 是否需要确认
      */
-    logout ({ commit, dispatch }, { confirm = false } = {}) {
+    logout({ commit, dispatch }, { confirm = false } = {}) {
       /**
        * @description 注销
        */
-       function doLogout () {
+      function doLogout() {
         // console.log("token1:",util.cookies.get("token"));
         logout().then((res) => {
-        // 删除cookie
-        util.cookies.remove('token')
-        util.cookies.remove('uuid')
-        // console.log("token2:",util.cookies.get("token"));
-        // 清空 vuex 用户信息
-        dispatch('d2admin/user/set', {}, { root: true })
-        // 跳转路由
+          // 删除cookie
+          util.cookies.remove('token')
+          util.cookies.remove('uuid')
+          // console.log("token2:",util.cookies.get("token"));
+          // 清空 vuex 用户信息
+          dispatch('d2admin/user/set', {}, { root: true })
+          // 跳转路由
           router.push({
             name: 'login'
           })
@@ -114,7 +165,8 @@ export default {
         MessageBox.confirm('注销当前账户吗?  打开的标签页和用户设置将会被保存。', '确认操作', {
           confirmButtonText: '确定注销',
           cancelButtonText: '放弃',
-          type: 'warning'
+          type: 'warning',
+          with: 'auto'
         })
           .then(() => {
             commit('d2admin/gray/set', false, { root: true })
@@ -134,7 +186,7 @@ export default {
      * @description 用户登录后从持久化数据加载一系列的设置
      * @param {Object} state vuex state
      */
-    load ({ dispatch }) {
+    load({ dispatch }) {
       return new Promise(async resolve => {
         // DB -> store 加载用户名
         await dispatch('d2admin/user/load', null, { root: true })

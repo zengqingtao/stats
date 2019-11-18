@@ -5,7 +5,7 @@ export default [
     title: '页面',
     icon: 'folder-o',
     children: [
-     
+      
     ]
   }
 ]

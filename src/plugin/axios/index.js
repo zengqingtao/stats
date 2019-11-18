@@ -63,11 +63,14 @@ service.interceptors.response.use(
     // 这个状态码是和后端约定的
     const { code } = dataAxios
     // 根据 code 进行判断
-    if(dataAxios.data.isLogout == 1){
+    if (code == 1001||dataAxios.data.isLogout == 1) {
+      // token过期后，清除本地的token和uuid
+      util.cookies.remove('token')
+      util.cookies.remove('uuid')
       router.push({
         name: 'login'
       })
-      errorCreate(`${dataAxios.message}`)
+      errorCreate("token已过期,请重新登录！")
     }else{
       if (code === undefined) {
         // 如果没有 code 代表这不是项目后端开发的接口 比如可能是 D2Admin 请求最新版本
@@ -78,9 +81,9 @@ service.interceptors.response.use(
           case 1:
             // [ 示例 ] code === 1 代表没有错误
             return dataAxios.data
-          case 'xxx':
+          case 1001:
             // [ 示例 ] 其它和后台约定的 code
-            errorCreate(`[ code: xxx ] ${dataAxios.message}: ${response.config.url}`)
+            errorCreate(`${dataAxios.message}`)
             break
           default:
             // 不是正确的 code

@@ -5,6 +5,9 @@
     line-height: 36px;
   }
   .el-submenu__title {
+    @media screen and (max-width: 480px) {
+      padding-left: 0px;
+    }
     height: 36px;
     line-height: 36px;
   }
@@ -14,10 +17,11 @@
 .d2-layout-header-aside-group {
   height: 100%;
   width: 100%;
-  min-width: 900px;
+  min-width: 375px;
   background-size: cover;
   background-position: center;
-  overflow: hidden;
+  // overflow: hidden;
+  overflow: auto;
   position: relative;
   // 背景上面的半透明遮罩
   .d2-layout-header-aside-mask {
@@ -33,7 +37,8 @@
         &.is-scrollable {
           position: relative;
           padding: 0 20px;
-          .d2-theme-header-menu__prev, .d2-theme-header-menu__next {
+          .d2-theme-header-menu__prev,
+          .d2-theme-header-menu__next {
             display: -webkit-box;
             display: -ms-flexbox;
             display: flex;
@@ -44,15 +49,16 @@
           .d2-theme-header-menu__scroll {
             white-space: nowrap;
             position: relative;
-            -webkit-transition: -webkit-transform .3s;
-            transition: -webkit-transform .3s;
-            transition: transform .3s;
-            transition: transform .3s, -webkit-transform .3s;
-            transition: transform .3s,-webkit-transform .3s;
+            -webkit-transition: -webkit-transform 0.3s;
+            transition: -webkit-transform 0.3s;
+            transition: transform 0.3s;
+            transition: transform 0.3s, -webkit-transform 0.3s;
+            transition: transform 0.3s, -webkit-transform 0.3s;
             float: left;
           }
         }
-        .d2-theme-header-menu__prev, .d2-theme-header-menu__next {
+        .d2-theme-header-menu__prev,
+        .d2-theme-header-menu__next {
           height: 60px;
           position: absolute;
           top: 0;
@@ -74,12 +80,27 @@
     }
     .d2-theme-container {
       .d2-theme-container-aside {
-        transition: width .3s;
+        transition: width 0.3s;
         position: relative;
+        @media screen and (max-width: 480px) {
+          position: absolute;
+          background: rgba($color: #ebf1f6, $alpha: 0.9);
+          z-index: 12;
+          height: 100%;
+        }
         .d2-layout-header-aside-menu-side {
           @extend %full;
           overflow: hidden;
         }
+      }
+      .d2-theme-container-aside-widthCollapse {
+        width: 65px;
+        @media screen and (max-width: 480px) {
+          width: 0px;
+        }
+      }
+      .d2-theme-container-aside-width {
+        width: 200px;
       }
       .d2-theme-container-main {
         padding: 0px;
@@ -116,7 +137,7 @@
     .d2-theme-header {
       // logo区域
       .logo-group {
-        transition: width .3s;
+        transition: width 0.3s;
         float: left;
         text-align: center;
         img {
@@ -166,6 +187,11 @@
         height: 60px;
         display: flex;
         align-items: center;
+        .el-button.el-tooltip.d2-mr.btn-text.can-hover.el-button--text.el-button--default {
+          @media screen and (max-width: 480px) {
+            display: none;
+          }
+        }
         .btn-text {
           padding: 14px 12px;
           border-radius: 4px;
@@ -238,6 +264,9 @@
           // 多页面控制器
           .d2-multiple-page-control-group {
             padding-right: 20px;
+            @media screen and (max-width: 480px) {
+              padding-right: 0px;
+            }
             .d2-multiple-page-control-content {
               overflow: auto;
               position: relative;
@@ -281,16 +310,27 @@
               right: 20px;
               bottom: 0px;
               left: 0px;
+              @media screen and (max-width: 480px) {
+                right: 0px;
+              }
               display: flex;
               flex-direction: column;
               overflow: hidden;
               .d2-container-full__header {
                 padding: 20px;
+                // @media screen and (max-width: 480px) {
+                //   display: none;
+                // }
               }
               .d2-container-full__body {
                 flex-grow: 1;
                 height: 100%;
                 padding: 20px 20px;
+                // 添加
+                @media screen and (max-width: 480px) {
+                  padding: 0px;
+                  overflow: "";
+                }
                 overflow: auto;
                 position: relative;
               }

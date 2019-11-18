@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import { mapState } from 'vuex'
 import VueRouter from 'vue-router'
 
 // 进度条
@@ -16,6 +17,7 @@ import { validatenull } from '@/libs/validate.js'//-------------------引入
 import { GetMenu } from '@/api/menu' //-------------------------引入
 import { frameInRoutes } from '@/router/routes'
 Vue.use(VueRouter)
+
 
 // 导出路由 在 main.js 里使用
 const router = new VueRouter({
@@ -49,23 +51,25 @@ router.beforeEach(async (to, from, next) => {
         // 多页面控制: 处理路由 得到每一级的路由设置
         store.commit('d2admin/page/init', [].concat(frameInRoutes, oRoutes))
         // 设置侧边栏菜单
-        store.commit('d2admin/menu/asideSet', res.role)
+        const roleid = util.cookies.get('roleid')
+        console.log("roleid--:",roleid);
+        if(roleid == 3){
+          store.commit('d2admin/menu/asideSet', [])
+        }else{
+          store.commit('d2admin/menu/asideSet', res.role)
+        }
         // 设置顶栏菜单
         store.commit('d2admin/menu/headerSet', [])
         router.addRoutes(oRoutes)
-        if (util.checkRoute(res.role, to.path)) {
+        console.log("oRoutes:",oRoutes);
+        // if (util.checkRoute(res.role, to.path)) {
           next()
-        } else {
-          next({ name: 'index' })
-        }
+        // } else {
+        //   next({ name: 'index' })
+        // }
       }).catch(() => {
         // 查询菜单失败 跳转到登陆界面
-        next({
-          name: 'login',
-          query: {
-            redirect: to.fullPath
-          }
-        })
+        next({ name: 'login' })
       })
     } else {
       // 没有登录的时候跳转到登录界面
